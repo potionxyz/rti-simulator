@@ -16,6 +16,7 @@
 #include "scene.h"
 #include "forward_model.h"
 #include "reconstructor.h"
+#include "visualiser.h"
 
 // helper function to print reconstruction results cleanly
 void print_result(const ReconstructionResult& r) {
@@ -192,9 +193,82 @@ int main() {
         std::cout << std::endl;
     }
 
+    // ====================================================================
+    // visualisation output
+    // ====================================================================
     std::cout << "========================================" << std::endl;
-    std::cout << "phase 5 complete - reconstruction engine working." << std::endl;
-    std::cout << "next: visualisation." << std::endl;
+    std::cout << "GENERATING VISUALISATIONS" << std::endl;
+    std::cout << "========================================" << std::endl;
+    {
+        // set up scene and run reconstruction for visualisation
+        auto scene = Scene::create_single_person_centre();
+        scene.apply_to_grid(grid);
+
+        auto y = forward.simulate(grid, 0.0);
+        auto x_tik = recon.tikhonov(y, 1.0);
+
+        // apply reconstruction to a grid for visualisation
+        VoxelGrid recon_output(room_x, room_y, room_z, voxel_size);
+        recon.apply_to_grid(x_tik, recon_output);
+
+        // 1. terminal ASCII output
+        std::cout << std::endl;
+        std::cout << "--- ground truth (mid-height slice) ---" << std::endl;
+        Visualiser::print_slice_z(grid, grid.get_nz() / 2);
+        std::cout << std::endl;
+
+        std::cout << "--- reconstruction (mid-height slice) ---" << std::endl;
+        Visualiser::print_slice_z(recon_output, grid.get_nz() / 2);
+        std::cout << std::endl;
+
+        std::cout << "--- ground truth (front view, mid-depth) ---" << std::endl;
+        Visualiser::print_slice_y(grid, grid.get_ny() / 2);
+        std::cout << std::endl;
+
+        // 2. PPM image exports
+        Visualiser::export_slice_ppm(grid, grid.get_nz() / 2,
+                                      "output_truth_z5.ppm");
+        Visualiser::export_slice_ppm(recon_output, grid.get_nz() / 2,
+                                      "output_recon_z5.ppm");
+        Visualiser::export_comparison_ppm(grid, recon_output, grid.get_nz() / 2,
+                                           "output_comparison_z5.ppm");
+        std::cout << "exported PPM images: output_truth_z5.ppm, "
+                  << "output_recon_z5.ppm, output_comparison_z5.ppm" << std::endl;
+
+        // 3. 3D HTML viewers
+        Visualiser::export_3d_html(grid, network,
+                                    "output_truth_3d.html",
+                                    "RTI Ground Truth - Person Centre");
+        Visualiser::export_3d_html(recon_output, network,
+                                    "output_recon_3d.html",
+                                    "RTI Reconstruction - Tikhonov lambda=1.0");
+        Visualiser::export_comparison_3d_html(grid, recon_output, network,
+                                               "output_comparison_3d.html");
+        std::cout << "exported 3D viewers: output_truth_3d.html, "
+                  << "output_recon_3d.html, output_comparison_3d.html" << std::endl;
+    }
+
+    // also generate visualisations for two-people scene
+    {
+        auto scene = Scene::create_two_people();
+        scene.apply_to_grid(grid);
+
+        auto y = forward.simulate(grid, 0.0);
+        auto x_tik = recon.tikhonov(y, 1.0);
+
+        VoxelGrid recon_output(room_x, room_y, room_z, voxel_size);
+        recon.apply_to_grid(x_tik, recon_output);
+
+        Visualiser::export_comparison_3d_html(grid, recon_output, network,
+                                               "output_two_people_3d.html");
+        std::cout << "exported: output_two_people_3d.html" << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << "all phases complete." << std::endl;
+    std::cout << "open the .html files in a browser for interactive 3D views."
+              << std::endl;
 
     return 0;
 }
