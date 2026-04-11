@@ -1,0 +1,19 @@
+{
+    "name": "single_person_centre",
+    "obstacles": [
+        {
+            "attenuation": 4.0,
+            "max": [
+                1.2,
+                1.15,
+                1.7
+            ],
+            "min": [
+                0.8,
+                0.85,
+                0.0
+            ],
+            "name": "person_1"
+        }
+    ]
+}
