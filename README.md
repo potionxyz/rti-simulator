@@ -20,7 +20,7 @@ think of it like a CT scan, but with WiFi signals instead of X-rays.
 | two people | 0.114m | Tikhonov (lambda=1.0) |
 | person in corner | 0.659m | Tikhonov (lambda=1.0) |
 
-interactive 3D viewer: [rti-viewer.vercel.app](https://rti-viewer.vercel.app)
+interactive 3D viewer: [0xnath-rti.vercel.app](https://0xnath-rti.vercel.app)
 
 ## the maths
 
