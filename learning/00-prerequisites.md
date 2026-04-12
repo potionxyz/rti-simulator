@@ -1,6 +1,6 @@
 # 00-prerequisites: the maths you need first
 
-before diving into the exact c++ simulator code, you must be completely fluent in three areas of A-level maths/further maths:
+before diving into the exact c++ simulator code, you must be completely fluent in three areas of advanced mathematics:
 
 ## 1. the dot product (scalar product)
 if $\mathbf{a} = \begin{pmatrix} x_1 \\ y_1 \\ z_1 \end{pmatrix}$ and $\mathbf{b} = \begin{pmatrix} x_2 \\ y_2 \\ z_2 \end{pmatrix}$, then:
@@ -24,4 +24,4 @@ least squares and tikhonov regularisation both work by minimising the squared no
 ## 4. partial derivatives (conceptually)
 you don't need to manually derive matrix calculus equations, but you must know what the $\nabla$ (nabla) operator is. to find the minimum of a curve (like an error function in least squares), you take the derivative and set it to exactly zero. 
 
-if you have these four concepts locked down from A-Level Further Maths, you are mathematically prepared for `01-voxel-maths.md`.
+if you have these four concepts locked down from advanced mathematics, you are mathematically prepared for `01-voxel-maths.md`.

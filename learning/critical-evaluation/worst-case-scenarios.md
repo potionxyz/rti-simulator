@@ -1,8 +1,8 @@
 # worst-case-scenarios: when the model breaks
 
-all mathematical simulations are inherently flawed. an imperial level engineer should know exactly how their algorithm will fail long before compiling it.
+all mathematical simulations are inherently flawed. a strong systems engineer should know exactly how their algorithm will fail long before compiling it.
 
-if you sit in front of an interviewer and say "the simulator is perfect and the physics run fine," they will tear your model apart. you must beat them to it.
+if you sit in front of code reviewers and say "the simulator is perfect and the physics run fine," they will tear your model apart. you must beat them to it.
 
 if they ask you: "What if X happens?", these are the catastrophic failures of the rti algorithm and how to address them defensively.
 

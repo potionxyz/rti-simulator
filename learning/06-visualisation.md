@@ -2,7 +2,7 @@
 
 we have a solved $\mathbf{x}$ vector from the Tikhonov Regularisation engine. it is a $27000 \times 1$ column vector representing a $30 \times 30 \times 30$ room.
 
-but you cannot show admissions tutors a `std::vector<float>`, so we need a visualisation pipeline. the goal is to transform this raw 1D array back into an interpretable 3D space, or at the very least, a 2D slice image (like a CT scan).
+but you cannot show anyone reviewing the project a `std::vector<float>`, so we need a visualisation pipeline. the goal is to transform this raw 1D array back into an interpretable 3D space, or at the very least, a 2D slice image (like a CT scan).
 
 ## mapping 1d results to 2d image pixels
 
@@ -22,7 +22,7 @@ you can export this data into a `.ppm` (Portable Pixmap Format) file using direc
 
 ## the 3d scatter plot
 
-for a proper Imperial EIE presentation, a static 2D slice is not enough. we need true volumetric rendering. 
+for a proper technical presentation, a static 2D slice is not enough. we need true volumetric rendering. 
 
 writing a native OpenGL/Vulkan C++ renderer for voxels is a massive project in itself. instead, i kept the C++ core decoupled and built a web-based visualiser (the Vercel app).
 

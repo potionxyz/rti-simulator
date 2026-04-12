@@ -8,7 +8,7 @@ if we try to solve for $\mathbf{y_{noisy}} = \mathbf{Wx}$, any exact mathematica
 
 ## the least squares approach
 
-to find the "best fit" solution when exact equations fail, we use a concept from statistics and A-Level Further Maths: **Least Squares**.
+to find the "best fit" solution when exact equations fail, we use a concept from statistics: **Least Squares**.
 
 instead of finding an $\mathbf{x}$ that perfectly satisfies $\mathbf{y} = \mathbf{Wx}$, we want to find an $\mathbf{x}$ that minimises the difference (the error) between what our forward model *predicts*, and what the ESP32 sensors *actually measure*.
 

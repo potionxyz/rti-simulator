@@ -1,6 +1,6 @@
 # maths-you-must-know: the theoretical bedrock
 
-if a professor or lead engineer queries this architecture, they will not ask about c++. they will ask about the underlying assumptions you made when mapping physical reality into finite mathematics.
+if a lead engineer or lead engineer queries this architecture, they will not ask about c++. they will ask about the underlying assumptions you made when mapping physical reality into finite mathematics.
 
 you must be perfectly fluent in these four concepts. if asked to write them on a whiteboard, you cannot hesitate.
 

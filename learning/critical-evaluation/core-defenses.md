@@ -1,8 +1,8 @@
-# 05-imperial-interview-prep: defending the architecture
+# 05-core-defenses: defending the architecture
 
-if you mention this project in your personal statement or at an interview, the admissions tutors at Imperial EIE will not ask you "did you write this?" they will ask probing technical questions to see if you understand the fundamental limits of the mathematical model and the C++ architecture.
+if you present this project, senior reviewers will not ask you "did you write this?" they will ask probing technical questions to see if you understand the fundamental limits of the mathematical model and the C++ architecture.
 
-this document is your defensive roadmap. it contains the most likely questions a professor will ask, why they are asking them, and how you should answer.
+this document is your defensive roadmap. it contains the most likely questions an engineer will ask, why they are asking them, and how you should answer.
 
 ---
 

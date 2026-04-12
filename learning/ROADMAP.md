@@ -1,8 +1,8 @@
-# syllabus: imperial eie rti mastery
+# syllabus: radio tomographic imaging (rti) mastery
 
-this is the master syllabus for understanding the radio tomographic imaging (rti) simulator. it is structured like a university module specification, designed specifically to bridge your a-level further maths and physics knowledge into applied c++ software engineering.
+this is the master syllabus for understanding the radio tomographic imaging (rti) simulator. it is structured like a university module specification, designed specifically to bridge core mathematics and physics knowledge into applied c++ software engineering.
 
-to defend this at an imperial interview, you cannot just know the code. you must understand the mathematical limits of the physical model.
+to defend this architecture, you cannot just know the code. you must understand the mathematical limits of the physical model.
 
 work through these modules in order.
 
@@ -95,7 +95,7 @@ work through these modules in order.
     *   `critical-evaluation/maths-you-must-know.md` 
     *   `critical-evaluation/trade-off-questions.md` 
     *   `critical-evaluation/worst-case-scenarios.md` 
-*   **checkpoint:** if an imperial professor says "your model assumes a direct line of sight, but wifi bounces. why didn't you model the bounces?", what is your exact, technical defense?
+*   **checkpoint:** if a senior engineer says "your model assumes a direct line of sight, but wifi bounces. why didn't you model the bounces?", what is your exact, technical defense?
 
 ---
 *study discipline:* do not move to the next module until you can answer the checkpoint question cleanly, out loud, without reading the notes.

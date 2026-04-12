@@ -4,7 +4,7 @@ in the previous section, we established that the signal loss $\Delta y_i$ on a s
 
 $$ \Delta y_i = W_{i,1}x_1 + W_{i,2}x_2 + \dots + W_{i,N}x_N $$
 
-if you are studying A-Level Further Maths, you will immediately recognise this as a linear equation. 
+you will immediately recognise this as a linear equation. 
 
 if we have an 8-node sensor network, we have $8 \times 7 / 2 = 28$ unique line-of-sight links. therefore, we have 28 simultaneous linear equations. 
 
@@ -47,13 +47,13 @@ our forward simulator uses $\mathbf{W}$ and a known $\mathbf{x}$ to generate moc
 
 but the ultimate goal of Radio Tomographic Imaging is the **inverse problem**. in the real world, the ESP32s measure $\mathbf{y}$, the physics engine generates $\mathbf{W}$ based on where you placed the nodes, and the computer has to solve for $\mathbf{x}$ (the image of the room).
 
-in A-Level Maths, solving $\mathbf{Wx} = \mathbf{y}$ is straightforward. you find the inverse of $\mathbf{W}$, denoted $\mathbf{W}^{-1}$, and multiply both sides:
+in standard linear algebra, solving $\mathbf{Wx} = \mathbf{y}$ is straightforward. you find the inverse of $\mathbf{W}$, denoted $\mathbf{W}^{-1}$, and multiply both sides:
 
 $$ \mathbf{W}^{-1}\mathbf{Wx} = \mathbf{W}^{-1}\mathbf{y} \implies \mathbf{x} = \mathbf{W}^{-1}\mathbf{y} $$
 
 ### the dimensionality trap
 
-there is a fatal flaw in this A-Level approach. **a matrix must be square ($N \times N$) to have an inverse.** 
+there is a fatal flaw in this approach. **a matrix must be square ($N \times N$) to have an inverse.** 
 
 our $\mathbf{W}$ matrix is $28 \times 27000$. it is severely rectangular. 
 in mathematical terms, the problem is **underdetermined**. we have 27,000 unknowns (voxels), but only 28 equations (measurements). 

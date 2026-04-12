@@ -1,6 +1,6 @@
 # trade-off-questions: defending engineering choices
 
-an imperial eie (or any senior systems architecture) interview will push past the theory and focus heavily on trade-offs. in software engineering, every choice is awful. an architecture is successful because you chose the *least awful* option for your specific goals.
+a senior systems architecture review will push past the theory and focus heavily on trade-offs. in software engineering, every choice is awful. an architecture is successful because you chose the *least awful* option for your specific goals.
 
 here is the defensive analysis of the fundamental trade-offs inside your rti simulator.
 
