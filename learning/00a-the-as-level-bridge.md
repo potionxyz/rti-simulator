@@ -72,3 +72,22 @@ to find the bottom of a bowl, we can't use $\frac{dy}{dx}$. we use the **vector 
 *   $\nabla$ tells you the slope in every direction simultaneously. 
 
 if you set $\nabla = \mathbf{0}$ (a vector of all zeros), you have found the exact bottom of the 27,000-dimensional bowl. this is how we mathematically calculate the perfect image of the room, which leads directly to the A-Level bridge.
+---
+
+## 4. Waves & Power Loss (Logarithms and Decibels)
+
+**Where you are (AS-Level Physics - Waves):**
+you know that wave intensity $I$ drops off with distance according to the inverse-square law ($I = \frac{P}{4\pi r^2}$). you know power is measured in Watts (W).
+
+**The Bridge (Decibels - dB):**
+in RTI, we do not measure signal strength in Watts. the numbers are too small. a Wi-Fi signal hitting a receiver might be $0.000000001\text{ W}$.
+
+instead, radio engineers use a logarithmic scale called **Decibels (dBm)**. 
+the formula is $P_{\text{dBm}} = 10 \times \log_{10}(P_{\text{milliWatts}})$.
+
+you do not need to calculate the logs yourself, but you must memorize these three translation rules:
+1.  **dBm is logarithmic:** instead of multiplying or dividing power by distance, we simply *add* or *subtract* dB values. 
+2.  **The -3dB Rule:** if a signal drops by $3\text{ dB}$, it has lost exactly **half** of its physical power. if it drops by $10\text{ dB}$, it has lost $90\%$ of its power.
+3.  **Linear Sums:** in our simulation ($\Delta y_i = \sum W_{ij} x_j$), the attenuation values ($x_j$) are in dB/metre. because we are operating in logs, the total signal loss across the room is just the simple addition (the sum) of the loss inside every voxel. 
+
+if a human body causes $4\text{ dB/m}$ of loss, and the radio wave travels $0.5\text{m}$ through the chest, the signal strength drops by $2\text{ dB}$. the mathematics of logarithms converts complex physical multiplication into simple addition.
