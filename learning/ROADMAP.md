@@ -1,6 +1,8 @@
 # syllabus: radio tomographic imaging (rti) mastery
 
 this is the master syllabus for understanding the radio tomographic imaging (rti) simulator. it is structured like a university module specification, designed specifically to bridge core mathematics and physics knowledge into applied c++ software engineering.
+2. Read `00a-the-as-level-bridge.md`: Translating GCSE to Matrix Form.
+3. Read `00b-the-a-level-bridge.md`: Mastering the Normal Equations.
 
 to defend this architecture, you cannot just know the code. you must understand the mathematical limits of the physical model.
 
