@@ -9,7 +9,6 @@ work through these modules in order.
 ---
 
 ## module 1: mathematical foundations
-**a-level crossover:** further pure maths (matrices, vectors), core maths (calculus, geometry).
 **objective:** build the mental scaffolding required to understand n-dimensional linear algebra and multivariate calculus before writing any code.
 
 *   **topics covered:**
@@ -21,7 +20,6 @@ work through these modules in order.
 *   **checkpoint:** can you explain why minimizing a squared function requires setting its first derivative to zero?
 
 ## module 2: spatial discretisation & memory architecture
-**a-level crossover:** computer science (data structures, memory), maths (coordinate geometry).
 **objective:** understand how continuous physical space is handled by discrete computer memory, and why c++ cache locality dictates algorithm design.
 
 *   **topics covered:**
@@ -34,7 +32,6 @@ work through these modules in order.
 *   **checkpoint:** without looking at the formula, can you derive the 1d index for a voxel given the room dimensions?
 
 ## module 3: the physics of rf attenuation (forward model)
-**a-level crossover:** physics (waves, attenuation, inverse-square law), maths (parametric lines).
 **objective:** simulate the physical propagation of 2.4ghz wi-fi signals through physical matter using exact geometric ray-tracing.
 
 *   **topics covered:**
@@ -47,7 +44,6 @@ work through these modules in order.
 *   **checkpoint:** why is stepping 1mm at a time along a ray computationally worse than siddon's parametric intersection method?
 
 ## module 4: linear algebra & sparse systems
-**a-level crossover:** further maths (matrices, systems of linear equations).
 **objective:** cast the physical ray-tracing data into a massive linear system ($\mathbf{y} = \mathbf{Wx}$) and handle the memory architecture of large-scale matrices.
 
 *   **topics covered:**
@@ -59,7 +55,6 @@ work through these modules in order.
 *   **checkpoint:** what is the exact physical meaning of a single numerical value stored at $W_{row=5, col=1024}$?
 
 ## module 5: inverse problems & regularisation
-**a-level crossover:** further maths (data fitting, regression), statistics.
 **objective:** solve the unsolvable matrix. mathematically reverse the physics engine to calculate the 3d room given only noisy 1d sensor data.
 
 *   **topics covered:**
@@ -72,7 +67,6 @@ work through these modules in order.
 *   **checkpoint:** physically, what happens to the output 3d image if you set lambda ($\lambda$) to $0.0$? what happens if you set it to $1,000,000$?
 
 ## module 6: software engineering & visualisation
-**a-level crossover:** computer science (architecture, data formats).
 **objective:** pipeline the floating-point matrix outputs into human-readable 3d graphics by decoupling the c++ backend from a web frontend.
 
 *   **topics covered:**
