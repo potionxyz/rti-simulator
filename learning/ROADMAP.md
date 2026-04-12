@@ -91,10 +91,10 @@ work through these modules in order.
     *   the threat of multipath fading in true enclosed physical spaces.
     *   computational trade-offs: voxel resolution vs conjugate gradient solver execution time.
 *   **reading:** 
-    *   `interview-prep/likely-questions.md`
-    *   `interview-prep/maths-you-must-know.md` (to be written/revised)
-    *   `interview-prep/trade-off-questions.md` (to be written/revised)
-    *   `interview-prep/worst-case-scenarios.md` (to be written/revised)
+    *   `critical-evaluation/core-defenses.md`
+    *   `critical-evaluation/maths-you-must-know.md` 
+    *   `critical-evaluation/trade-off-questions.md` 
+    *   `critical-evaluation/worst-case-scenarios.md` 
 *   **checkpoint:** if an imperial professor says "your model assumes a direct line of sight, but wifi bounces. why didn't you model the bounces?", what is your exact, technical defense?
 
 ---
