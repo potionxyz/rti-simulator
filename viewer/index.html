@@ -252,11 +252,73 @@
     transition: color 0.4s ease;
   }
 
+  /* force 4 cards in one line on desktop */
+  .cards {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .about {
+    max-width: 860px;
+    margin: 4rem auto 2rem;
+    padding: 2.5rem 2rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .about h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .about p {
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--muted);
+    font-weight: 400;
+    margin-bottom: 1rem;
+  }
+
+  .about p:last-child { margin-bottom: 0; }
+
+  .about strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .about .tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .about .tech-tags span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.4);
+  }
+
+  @media (max-width: 900px) {
+    .cards { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
   @media (max-width: 640px) {
     .topbar { padding: 1rem 1.25rem; }
     .hero { padding: 6rem 1.25rem 3rem; }
     .stats { gap: 1.5rem; }
-    .cards { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr !important; }
+    .about { padding: 2rem 1.5rem; margin: 3rem 1rem 2rem; }
   }
 </style>
 </head>
@@ -266,8 +328,7 @@
     <div class="topbar-links">
       <a href="https://github.com/potionxyz/rti-simulator" target="_blank">source code</a>
       <a href="https://github.com/potionxyz" target="_blank">github</a>
-      <a href="https://0xnath-live.vercel.app">home</a>
-
+      <a href="https://0xnath-live.vercel.app" class="back-btn">← personal site</a>
     </div>
   </nav>
 
@@ -324,6 +385,31 @@
         <span class="card-desc">testing multi-target resolution - can the system distinguish two people at different positions?</span>
       </a>
     </div>
+
+    <section class="about">
+      <h2>about this project</h2>
+      <p>
+        <strong>radio tomographic imaging (RTI)</strong> reconstructs a 3D picture of a room from how wireless signals attenuate as they pass through it. eight virtual ESP32 nodes are placed at the corners of a 2m cube. the 28 unique links between them form the "radio rays" — analogous to X-rays in a medical CT scan.
+      </p>
+      <p>
+        when a human body enters the room, it absorbs RF energy and causes a measurable drop in signal strength on any link whose line of sight it intersects. the <strong>forward model</strong> simulates this using <strong>Siddon's ray-tracing algorithm</strong> from medical imaging — calculating exact path lengths through 1,000 voxels without iterative ray-marching.
+      </p>
+      <p>
+        the hard part is the <strong>inverse problem</strong>: given 28 noisy measurements, recover the 1,000-voxel attenuation image. the system is severely underdetermined, so the pseudo-inverse is numerically unstable. i solve it using <strong>Tikhonov regularisation</strong> with LDLT decomposition — stabilising the matrix by penalising extreme voxel values.
+      </p>
+      <p>
+        best-case localisation error is <strong>0.025m</strong> (back-projection, noiseless) and <strong>0.061m</strong> under Tikhonov with λ = 1.0. the solver stays usable up to roughly <strong>1.5 dB</strong> of Gaussian RSSI noise — the realistic operating region for cheap ESP32 hardware. all the heavy linear algebra runs in under 50ms per scene on a laptop; the 3D viewer is a pure Three.js export with no backend.
+      </p>
+      <div class="tech-tags">
+        <span>c++17</span>
+        <span>eigen</span>
+        <span>cmake</span>
+        <span>siddon's algorithm</span>
+        <span>tikhonov</span>
+        <span>ldlt</span>
+        <span>three.js</span>
+      </div>
+    </section>
 
     <div class="divider"></div>
 
