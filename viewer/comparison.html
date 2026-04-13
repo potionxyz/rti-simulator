@@ -3,29 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RTI Reconstruction - Comparison</title>
+<title>rti · comparison</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #111; overflow: hidden; font-family: monospace; }
-  #info {
-    position: absolute; top: 15px; left: 15px; color: #aaa;
-    font-size: 12px; z-index: 10; line-height: 1.6;
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono&display=swap');
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #F3F1EA;
+    --ink: #111010;
+    --muted: #8A8680;
+    --border: rgba(17,16,16,0.08);
+    --topbar-bg: rgba(243,241,234,0.85);
+    --social-bg: rgba(243,241,234,0.6);
+    --social-bg-hover: rgba(243,241,234,1);
+    --social-border-hover: rgba(17,16,16,0.15);
   }
-  #info h1 { font-size: 14px; color: #eee; margin-bottom: 5px; }
-  /* 3D labels rendered via sprites - no CSS labels needed */
+  body {
+    background: var(--cream);
+    overflow: hidden;
+    font-family: 'Instrument Sans', -apple-system, Helvetica, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.75rem;
+    z-index: 20;
+    border-bottom: 1px solid var(--border);
+    background: var(--topbar-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .topbar-brand {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .topbar-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: var(--social-bg);
+    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  }
+  .topbar-link:hover {
+    color: var(--ink);
+    border-color: var(--social-border-hover);
+    background: var(--social-bg-hover);
+  }
+  #info {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.75rem;
+    z-index: 15;
+    max-width: 480px;
+  }
+  #info h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin-bottom: 0.3rem;
+  }
+  #info .caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .timestamp {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    opacity: 0.35;
+    letter-spacing: 0.1em;
+    z-index: 15;
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 0.85rem 1rem; }
+    #info { left: 1rem; bottom: 1rem; max-width: calc(100% - 2rem); }
+    .timestamp { display: none; }
+  }
 </style>
 </head>
 <body>
+<nav class="topbar">
+  <a href="/" class="topbar-brand">nathan pang</a>
+  <a href="/" class="topbar-link">← all views</a>
+</nav>
 <div id="info">
-  <h1>RTI 3D Reconstruction - Ground Truth vs Reconstruction</h1>
-  drag to rotate, scroll to zoom
+  <h1>comparison · ground truth vs reconstruction</h1>
+  <div class="caption">drag · scroll · orbit</div>
 </div>
+<div class="timestamp" id="ts"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111111);
+scene.background = new THREE.Color(0xF3F1EA);
 
 const midX = 1.5;
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -40,8 +134,8 @@ const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.target.set(midX, 1, 1);
 controls.enableDamping = true;
 
-scene.add(new THREE.AmbientLight(0x404040, 0.6));
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
 
@@ -49,13 +143,13 @@ const vs = 0.2;
 const voxelGeo = new THREE.BoxGeometry(vs * 0.9, vs * 0.9, vs * 0.9);
 const nodeGeo = new THREE.SphereGeometry(0.05, 16, 16);
 const nodeMat = new THREE.MeshPhongMaterial({color: 0x4488ff, emissive: 0x224488});
-const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true, opacity: 0.15});
+const linkMat = new THREE.LineBasicMaterial({color: 0x111010, transparent: true, opacity: 0.12});
 
 // ground truth
 {
   const geo = new THREE.BoxGeometry(2,2,2);
   const edges = new THREE.EdgesGeometry(geo);
-  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333}));
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x111010, transparent: true, opacity: 0.35 }));
   line.position.set(1,1,1);
   scene.add(line);
 }
@@ -407,7 +501,7 @@ const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true,
 {
   const geo = new THREE.BoxGeometry(2.00,2.00,2.00);
   const edges = new THREE.EdgesGeometry(geo);
-  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333}));
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x111010, transparent: true, opacity: 0.35 }));
   line.position.set(4.00,1.00,1.00);
   scene.add(line);
 }
@@ -788,19 +882,19 @@ function makeLabelSprite(text) {
   canvas.height = 128;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.font = 'bold 56px monospace';
+  ctx.font = '500 50px "JetBrains Mono", monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillStyle = 'rgba(17,16,16,0.88)';
   const metrics = ctx.measureText(text);
   const pad = 24;
   const boxW = metrics.width + pad * 2;
   const boxH = 88;
   ctx.fillRect((canvas.width - boxW) / 2, (canvas.height - boxH) / 2, boxW, boxH);
-  ctx.strokeStyle = 'rgba(180,180,180,0.5)';
+  ctx.strokeStyle = 'rgba(243,241,234,0.15)';
   ctx.lineWidth = 2;
   ctx.strokeRect((canvas.width - boxW) / 2, (canvas.height - boxH) / 2, boxW, boxH);
-  ctx.fillStyle = '#eaeaea';
+  ctx.fillStyle = '#F3F1EA';
   ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
   const tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
@@ -831,6 +925,18 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+</script>
+<script>
+  (function(){
+    const ts = document.getElementById('ts');
+    if (!ts) return;
+    function tick() {
+      const d = new Date();
+      ts.textContent = d.toISOString().slice(0, 19).replace('T',' ') + ' UTC';
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
 </script>
 </body>
 </html>

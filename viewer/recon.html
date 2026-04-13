@@ -3,31 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RTI Reconstruction - Tikhonov lambda=1.0</title>
+<title>rti · reconstruction</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #111; overflow: hidden; font-family: monospace; }
-  #info {
-    position: absolute; top: 15px; left: 15px; color: #aaa;
-    font-size: 12px; z-index: 10; line-height: 1.6;
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono&display=swap');
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #F3F1EA;
+    --ink: #111010;
+    --muted: #8A8680;
+    --border: rgba(17,16,16,0.08);
+    --topbar-bg: rgba(243,241,234,0.85);
+    --social-bg: rgba(243,241,234,0.6);
+    --social-bg-hover: rgba(243,241,234,1);
+    --social-border-hover: rgba(17,16,16,0.15);
   }
-  #info h1 { font-size: 14px; color: #eee; margin-bottom: 5px; }
+  body {
+    background: var(--cream);
+    overflow: hidden;
+    font-family: 'Instrument Sans', -apple-system, Helvetica, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.75rem;
+    z-index: 20;
+    border-bottom: 1px solid var(--border);
+    background: var(--topbar-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .topbar-brand {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .topbar-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    background: var(--social-bg);
+    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  }
+  .topbar-link:hover {
+    color: var(--ink);
+    border-color: var(--social-border-hover);
+    background: var(--social-bg-hover);
+  }
+  #info {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.75rem;
+    z-index: 15;
+    max-width: 480px;
+  }
+  #info h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    margin-bottom: 0.3rem;
+  }
+  #info .caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .timestamp {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    opacity: 0.35;
+    letter-spacing: 0.1em;
+    z-index: 15;
+  }
+  @media (max-width: 640px) {
+    .topbar { padding: 0.85rem 1rem; }
+    #info { left: 1rem; bottom: 1rem; max-width: calc(100% - 2rem); }
+    .timestamp { display: none; }
+  }
 </style>
 </head>
 <body>
+<nav class="topbar">
+  <a href="/" class="topbar-brand">nathan pang</a>
+  <a href="/" class="topbar-link">← all views</a>
+</nav>
 <div id="info">
-  <h1>RTI Reconstruction - Tikhonov lambda=1.0</h1>
-  grid: 10x10x10<br>
-  voxel size: 0.2m<br>
-  drag to rotate, scroll to zoom
+  <h1>reconstruction · tikhonov λ = 1.0</h1>
+  <div class="caption">drag · scroll · orbit</div>
 </div>
+<div class="timestamp" id="ts"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 // scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x111111);
+scene.background = new THREE.Color(0xF3F1EA);
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(3.6, 3, 3.6);
@@ -43,15 +136,15 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
 // lighting
-scene.add(new THREE.AmbientLight(0x404040, 0.6));
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
 dirLight.position.set(5, 10, 5);
 scene.add(dirLight);
 
 // room wireframe
 const roomGeo = new THREE.BoxGeometry(2, 2, 2);
 const roomEdges = new THREE.EdgesGeometry(roomGeo);
-const roomLine = new THREE.LineSegments(roomEdges, new THREE.LineBasicMaterial({ color: 0x333333 }));
+const roomLine = new THREE.LineSegments(roomEdges, new THREE.LineBasicMaterial({ color: 0x111010, transparent: true, opacity: 0.35 }));
 roomLine.position.set(1, 1, 1);
 scene.add(roomLine);
 
@@ -446,7 +539,7 @@ const nodeGeo = new THREE.SphereGeometry(0.05, 16, 16);
 }
 
 // radio links
-const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true, opacity: 0.15});
+const linkMat = new THREE.LineBasicMaterial({color: 0x111010, transparent: true, opacity: 0.12});
 {
   const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(2.00,0.00,0.00)]);
   scene.add(new THREE.Line(geo, linkMat));
@@ -565,14 +658,14 @@ const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true,
   const canvas = document.createElement('canvas');
   canvas.width = 512; canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.font = 'bold 56px monospace';
+  ctx.font = '500 50px "JetBrains Mono", monospace';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillStyle = 'rgba(17,16,16,0.88)';
   const pad = 24, boxW = ctx.measureText('RECONSTRUCTION').width + pad*2, boxH = 88;
   ctx.fillRect((512-boxW)/2,(128-boxH)/2,boxW,boxH);
-  ctx.strokeStyle = 'rgba(180,180,180,0.5)'; ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(243,241,234,0.15)'; ctx.lineWidth = 2;
   ctx.strokeRect((512-boxW)/2,(128-boxH)/2,boxW,boxH);
-  ctx.fillStyle = '#eaeaea';
+  ctx.fillStyle = '#F3F1EA';
   ctx.fillText('RECONSTRUCTION', 256, 66);
   const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
@@ -594,6 +687,18 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+</script>
+<script>
+  (function(){
+    const ts = document.getElementById('ts');
+    if (!ts) return;
+    function tick() {
+      const d = new Date();
+      ts.textContent = d.toISOString().slice(0, 19).replace('T',' ') + ' UTC';
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
 </script>
 </body>
 </html>

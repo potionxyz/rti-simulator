@@ -1,164 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RTI 3D Volumetric Simulator</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    background: #111;
-    color: #aaa;
-    font-family: monospace;
-    min-height: 100vh;
-    padding: 40px 24px;
-  }
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-  h1 {
-    color: #eee;
-    font-size: 14px;
-    font-weight: normal;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .sub {
-    font-size: 12px;
-    color: #666;
-    line-height: 1.7;
-    margin-bottom: 32px;
-  }
-  h2 {
-    color: #888;
-    font-size: 11px;
-    font-weight: normal;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 28px 0 10px;
-  }
-  .views {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1px;
-    background: #222;
-    border: 1px solid #222;
-  }
-  a.view {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 18px;
-    background: #161616;
-    color: #ccc;
-    text-decoration: none;
-    font-size: 13px;
-    transition: background 0.1s, color 0.1s;
-  }
-  a.view:hover {
-    background: #1c1c1c;
-    color: #fff;
-  }
-  a.view .name {
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  a.view .arrow {
-    color: #444;
-    font-size: 14px;
-  }
-  a.view:hover .arrow { color: #888; }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1px;
-    background: #222;
-    border: 1px solid #222;
-  }
-  .stat {
-    padding: 12px 16px;
-    background: #161616;
-  }
-  .stat .label {
-    font-size: 10px;
-    color: #555;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-  .stat .val {
-    font-size: 14px;
-    color: #ddd;
-  }
-  footer {
-    margin-top: 32px;
-    font-size: 11px;
-    color: #444;
-    line-height: 1.8;
-  }
-  footer a {
-    color: #888;
-    text-decoration: none;
-    border-bottom: 1px dotted #444;
-  }
-  footer a:hover { color: #ccc; border-bottom-color: #888; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nathan · rti</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#128225;</text></svg>">
+
+  <!-- Meta -->
+  <meta name="description" content="rti 3d volumetric simulator · nathan">
+  <meta name="theme-color" content="#F3F1EA">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://0xnath-rti.vercel.app/">
+  <meta property="og:title" content="nathan · rti">
+  <meta property="og:description" content="radio tomographic imaging in c++ with eigen">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="nathan · rti">
+  <meta name="twitter:description" content="radio tomographic imaging in c++ with eigen">
+  <meta name="twitter:creator" content="@nathcashking">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Instrument+Sans:wght@300;400;500;600&family=JetBrains+Mono&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cream: #F3F1EA;
+      --warm: #EAE7DE;
+      --ink: #111010;
+      --muted: #8A8680;
+      --soft-muted: rgba(138,134,128,0.25);
+      --accent: #B2222B;
+      --number-color: #111010;
+      --border: rgba(17,16,16,0.08);
+      --topbar-bg: rgba(243,241,234,0.85);
+      --social-bg: rgba(243,241,234,0.6);
+      --social-bg-hover: rgba(243,241,234,1);
+      --social-border-hover: rgba(17,16,16,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100dvh;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'Instrument Sans', -apple-system, Helvetica, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: multiply;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: var(--topbar-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .topbar-brand {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .topbar-project-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      transition: color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .topbar-project-link:hover {
+      color: var(--ink);
+      border-color: var(--social-border-hover);
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 2rem 4rem;
+      text-align: center;
+    }
+
+    .headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 500;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      max-width: 640px;
+      margin-bottom: 3rem;
+    }
+
+    .headline em {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2.5rem;
+      margin-bottom: 3.5rem;
+      max-width: 640px;
+      width: 100%;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat .val {
+      font-family: 'JetBrains Mono', 'SF Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .stat .label {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .divider {
+      width: 60px;
+      height: 1px;
+      background: var(--border);
+      margin: 2rem auto 3rem;
+    }
+
+    .bio-section {
+      max-width: 440px;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .bio {
+      font-size: 0.85rem;
+      line-height: 1.9;
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    .views {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      max-width: 560px;
+    }
+
+    .views a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--social-bg);
+    }
+
+    .views a:hover {
+      color: var(--ink);
+      border-color: var(--social-border-hover);
+      background: var(--social-bg-hover);
+    }
+
+    .views a .arrow {
+      font-size: 0.75rem;
+      opacity: 0.5;
+    }
+
+    .views a:hover .arrow { opacity: 1; }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--social-bg);
+    }
+
+    .footer-links a:hover {
+      color: var(--ink);
+      border-color: var(--social-border-hover);
+      background: var(--social-bg-hover);
+    }
+
+    .footer-links svg {
+      width: 12px;
+      height: 12px;
+      fill: currentColor;
+      opacity: 0.5;
+    }
+
+    .footer-links a:hover svg { opacity: 1; }
+
+    .bottom-tag {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 2.5rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0.35;
+      z-index: 10;
+    }
+
+    .timestamp {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 2.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--muted);
+      opacity: 0.3;
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 1rem 1.25rem; }
+      .hero { padding: 5rem 1.25rem 3rem; }
+      .stats { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+      .views { gap: 0.6rem; }
+      .bottom-tag, .timestamp { display: none; }
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>RTI 3D Volumetric Simulator</h1>
-    <p class="sub">
-      radio tomographic imaging in pure c++17 with eigen.<br>
-      2m cube room // 10×10×10 voxel grid // 8 esp32 nodes // 28 links // tikhonov-regularised inverse solver.
-    </p>
+  <nav class="topbar">
+    <a href="https://0xnath-live.vercel.app" class="topbar-brand">nathan pang</a>
+    <a href="https://0xnath-live.vercel.app" class="topbar-project-link">← personal site</a>
+  </nav>
 
-    <h2>// 3D views</h2>
-    <div class="views">
-      <a class="view" href="comparison.html">
-        <span class="name">comparison &middot; truth vs reconstruction</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="view" href="truth.html">
-        <span class="name">ground truth</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="view" href="recon.html">
-        <span class="name">reconstruction &middot; tikhonov λ=1.0</span>
-        <span class="arrow">→</span>
-      </a>
-      <a class="view" href="two-people.html">
-        <span class="name">two people &middot; multi-body</span>
-        <span class="arrow">→</span>
-      </a>
-    </div>
+  <main class="hero">
+    <h1 class="headline">
+      radio tomographic imaging. <em>28 measurements, a thousand voxels, one human.</em>
+    </h1>
 
-    <h2>// single-person result · λ=1.0 · no noise</h2>
     <div class="stats">
       <div class="stat">
-        <div class="label">loc error</div>
         <div class="val">0.061 m</div>
+        <div class="label">loc error</div>
       </div>
       <div class="stat">
-        <div class="label">peak</div>
-        <div class="val">0.59</div>
+        <div class="val">1,000</div>
+        <div class="label">voxels</div>
       </div>
       <div class="stat">
-        <div class="label">voxel</div>
-        <div class="val">0.2 m</div>
+        <div class="val">28</div>
+        <div class="label">links</div>
       </div>
       <div class="stat">
+        <div class="val">1.5 dB</div>
         <div class="label">noise budget</div>
-        <div class="val">≤1.5 dB σ</div>
       </div>
     </div>
 
-    <footer>
-      drag to rotate &middot; scroll to zoom<br>
-      source: <a href="https://github.com/potionxyz/rti-simulator">github.com/potionxyz/rti-simulator</a><br>
-      built by <a href="https://0xnath-live.vercel.app">nathan</a>
-    </footer>
-  </div>
+    <div class="divider"></div>
+
+    <div class="bio-section">
+      <p class="bio">
+        a c++17 simulator for 3d volumetric rti. a 2m cube room is carved into 1,000 voxels and pinged by 8 virtual esp32 nodes. the solver reconstructs a human body from the 28 resulting radio-link measurements using tikhonov-regularised least squares. all rendered live in your browser.
+      </p>
+    </div>
+
+    <div class="views">
+      <a href="comparison.html">
+        <span>comparison</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="truth.html">
+        <span>ground truth</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="recon.html">
+        <span>reconstruction</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="two-people.html">
+        <span>two people</span>
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <div class="footer-links">
+      <a href="https://github.com/potionxyz/rti-simulator" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span>github</span>
+      </a>
+    </div>
+  </main>
+
+  <div class="bottom-tag">drag · scroll · orbit</div>
+  <div class="timestamp" id="ts"></div>
+
+  <script>
+    const ts = document.getElementById('ts');
+    function tick() {
+      const d = new Date();
+      ts.textContent = d.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
 </body>
 </html>
