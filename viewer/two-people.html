@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTI Reconstruction - Comparison</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; overflow: hidden; font-family: monospace; }
+  #info {
+    position: absolute; top: 15px; left: 15px; color: #aaa;
+    font-size: 12px; z-index: 10; line-height: 1.6;
+  }
+  #info h1 { font-size: 14px; color: #eee; margin-bottom: 5px; }
+  .label {
+    position: absolute; bottom: 20px; color: #666;
+    font-size: 13px; z-index: 10; text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  #label-left { left: 25%; transform: translateX(-50%); }
+  #label-right { right: 25%; transform: translateX(50%); }
+</style>
+</head>
+<body>
+<div id="info">
+  <h1>RTI 3D Reconstruction - Ground Truth vs Reconstruction</h1>
+  drag to rotate, scroll to zoom
+</div>
+<div class="label" id="label-left">ground truth</div>
+<div class="label" id="label-right">reconstruction</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+
+const midX = 1.5;
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(midX + 3, 3, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(midX, 1, 1);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0x404040, 0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(5, 10, 5);
+scene.add(dirLight);
+
+const vs = 0.2;
+const voxelGeo = new THREE.BoxGeometry(vs * 0.9, vs * 0.9, vs * 0.9);
+const nodeGeo = new THREE.SphereGeometry(0.05, 16, 16);
+const nodeMat = new THREE.MeshPhongMaterial({color: 0x4488ff, emissive: 0x224488});
+const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true, opacity: 0.15});
+
+// ground truth
+{
+  const geo = new THREE.BoxGeometry(2,2,2);
+  const edges = new THREE.EdgesGeometry(geo);
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333}));
+  line.position.set(1,1,1);
+  scene.add(line);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1,0,0),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,0.10,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,0.10,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,0.10,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,0.10,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,0.30,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,0.30,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,0.30,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,0.30,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,0.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,0.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,0.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,0.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,0.70,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,0.70,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,0.70,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,0.70,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,0.90,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,0.90,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,0.90,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,0.90,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,1.10,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,1.10,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,1.10,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,1.10,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,1.30,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,1.30,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,1.30,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,1.30,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.30,1.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(0.50,1.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.30,1.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(1.00,0.00,0.00),transparent:true,opacity:0.95,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(1.50,1.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(0.00,0.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(2.00,0.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(0.00,0.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(2.00,0.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(0.00,2.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(2.00,2.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(0.00,2.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(2.00,2.00,2.00);
+  scene.add(m);
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(2.00,0.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(0.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(2.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(0.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(2.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,0.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(0.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(2.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(0.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(2.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,0.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,2.00),new THREE.Vector3(2.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,2.00),new THREE.Vector3(0.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,2.00),new THREE.Vector3(2.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,2.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,0.00,2.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,2.00),new THREE.Vector3(0.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,2.00),new THREE.Vector3(2.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,2.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,0.00,2.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,2.00,0.00),new THREE.Vector3(2.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,2.00,0.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,2.00,0.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,2.00,0.00),new THREE.Vector3(0.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(2.00,2.00,0.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.00,2.00,2.00),new THREE.Vector3(2.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+// reconstruction
+{
+  const geo = new THREE.BoxGeometry(2.00,2.00,2.00);
+  const edges = new THREE.EdgesGeometry(geo);
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0x333333}));
+  line.position.set(4.00,1.00,1.00);
+  scene.add(line);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.80),transparent:true,opacity:0.40,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.10,0.10,0.10);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.80),transparent:true,opacity:0.40,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.90,0.10,1.90);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.30,0.30,0.30);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.70,0.30,1.70);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.50,0.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.50,0.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.70,0.70,0.70);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.30,0.70,1.30);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.90,0.90,0.90);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.10,0.90,1.10);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.90,1.10,0.90);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.10,1.10,1.10);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.70,1.30,0.70);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.30,1.30,1.30);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.50,1.50,0.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.50,1.50,1.50);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(3.30,1.70,0.30);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.MeshPhongMaterial({color:new THREE.Color(0.00,0.00,0.54),transparent:true,opacity:0.37,depthWrite:false});
+  const mesh = new THREE.Mesh(voxelGeo,m);
+  mesh.position.set(4.70,1.70,1.70);
+  scene.add(mesh);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(3.00,0.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(5.00,0.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(3.00,0.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(5.00,0.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(3.00,2.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(5.00,2.00,0.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(3.00,2.00,2.00);
+  scene.add(m);
+}
+{
+  const m = new THREE.Mesh(nodeGeo, nodeMat);
+  m.position.set(5.00,2.00,2.00);
+  scene.add(m);
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(5.00,0.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(3.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(5.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(3.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(5.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,0.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(3.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(5.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(3.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(5.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,0.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,2.00),new THREE.Vector3(5.00,0.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,2.00),new THREE.Vector3(3.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,2.00),new THREE.Vector3(5.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,2.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,0.00,2.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,2.00),new THREE.Vector3(3.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,2.00),new THREE.Vector3(5.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,2.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,0.00,2.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,2.00,0.00),new THREE.Vector3(5.00,2.00,0.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,2.00,0.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,2.00,0.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,2.00,0.00),new THREE.Vector3(3.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(5.00,2.00,0.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,2.00,2.00),new THREE.Vector3(5.00,2.00,2.00)]);
+  scene.add(new THREE.Line(g,linkMat));
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
