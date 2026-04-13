@@ -7,7 +7,7 @@ you must be perfectly fluent in these four concepts. if asked to write them on a
 ## 1. The Normal Equations ($\mathbf{W}^T\mathbf{Wx} = \mathbf{W}^T\mathbf{y}$)
 
 **The Concept:**
-you have a rectangular matrix equation $\mathbf{Wx} = \mathbf{y}$ (28 measurements, 27,000 voxels). it has no direct inverse.
+you have a rectangular matrix equation $\mathbf{Wx} = \mathbf{y}$ (28 measurements; 1,000 voxels at the committed scale, 27,000 at full deployment). it has no direct inverse.
 you want the Least Squares approximation.
 
 **The Derivation:**

@@ -3,174 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RTI 3D Volumetric Simulator — Viewer</title>
+<title>RTI 3D Volumetric Simulator</title>
 <style>
-  :root {
-    --bg: #0a0a0a;
-    --fg: #e6e6e6;
-    --muted: #8a8a8a;
-    --accent: #4da6ff;
-    --card: #151515;
-    --border: #2a2a2a;
-  }
-  * { box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #111;
+    color: #aaa;
+    font-family: monospace;
     min-height: 100vh;
+    padding: 40px 24px;
   }
   .wrap {
-    max-width: 860px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 48px 24px;
   }
   h1 {
-    font-size: 28px;
-    font-weight: 600;
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
+    color: #eee;
+    font-size: 14px;
+    font-weight: normal;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
   }
-  .subtitle {
-    color: var(--muted);
-    font-size: 15px;
-    margin: 0 0 36px;
-    line-height: 1.5;
+  .sub {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 32px;
   }
   h2 {
-    font-size: 14px;
-    font-weight: 600;
+    color: #888;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin: 28px 0 12px;
+    margin: 28px 0 10px;
   }
-  .grid {
+  .views {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background: #222;
+    border: 1px solid #222;
   }
-  a.card {
-    display: block;
-    padding: 18px 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+  a.view {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #161616;
+    color: #ccc;
     text-decoration: none;
-    color: var(--fg);
-    transition: border-color 0.15s ease, transform 0.15s ease;
-  }
-  a.card:hover {
-    border-color: var(--accent);
-    transform: translateY(-1px);
-  }
-  a.card .name {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  a.card .desc {
     font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
+    transition: background 0.1s, color 0.1s;
   }
+  a.view:hover {
+    background: #1c1c1c;
+    color: #fff;
+  }
+  a.view .name {
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  a.view .arrow {
+    color: #444;
+    font-size: 14px;
+  }
+  a.view:hover .arrow { color: #888; }
   .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 14px;
-    margin-top: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: #222;
+    border: 1px solid #222;
   }
   .stat {
-    padding: 14px 16px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    padding: 12px 16px;
+    background: #161616;
   }
   .stat .label {
-    font-size: 11px;
+    font-size: 10px;
+    color: #555;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
     margin-bottom: 4px;
   }
   .stat .val {
-    font-size: 17px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    color: #ddd;
   }
   footer {
-    margin-top: 48px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-    font-size: 13px;
-    color: var(--muted);
+    margin-top: 32px;
+    font-size: 11px;
+    color: #444;
+    line-height: 1.8;
   }
-  footer a { color: var(--accent); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
-  code {
-    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
-    font-size: 12px;
-    padding: 1px 5px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
+  footer a {
+    color: #888;
+    text-decoration: none;
+    border-bottom: 1px dotted #444;
   }
+  footer a:hover { color: #ccc; border-bottom-color: #888; }
 </style>
 </head>
 <body>
   <div class="wrap">
     <h1>RTI 3D Volumetric Simulator</h1>
-    <p class="subtitle">
+    <p class="sub">
       radio tomographic imaging in pure c++17 with eigen.<br>
-      a 10×10×10 voxel room, 8 esp32 nodes, 28 links, tikhonov-regularised inverse solver.
+      2m cube room // 10×10×10 voxel grid // 8 esp32 nodes // 28 links // tikhonov-regularised inverse solver.
     </p>
 
-    <h2>3D views</h2>
-    <div class="grid">
-      <a class="card" href="comparison.html">
-        <div class="name">Comparison</div>
-        <div class="desc">ground truth vs tikhonov reconstruction, side by side</div>
+    <h2>// 3D views</h2>
+    <div class="views">
+      <a class="view" href="comparison.html">
+        <span class="name">comparison &middot; truth vs reconstruction</span>
+        <span class="arrow">→</span>
       </a>
-      <a class="card" href="truth.html">
-        <div class="name">Ground Truth</div>
-        <div class="desc">the simulated person the solver doesn't get to see</div>
+      <a class="view" href="truth.html">
+        <span class="name">ground truth</span>
+        <span class="arrow">→</span>
       </a>
-      <a class="card" href="recon.html">
-        <div class="name">Reconstruction</div>
-        <div class="desc">tikhonov λ=1.0 output from 28 noisy link measurements</div>
+      <a class="view" href="recon.html">
+        <span class="name">reconstruction &middot; tikhonov λ=1.0</span>
+        <span class="arrow">→</span>
       </a>
-      <a class="card" href="two-people.html">
-        <div class="name">Two People</div>
-        <div class="desc">multi-body resolution test</div>
+      <a class="view" href="two-people.html">
+        <span class="name">two people &middot; multi-body</span>
+        <span class="arrow">→</span>
       </a>
     </div>
 
-    <h2>Single-person result (λ=1.0, no noise)</h2>
+    <h2>// single-person result · λ=1.0 · no noise</h2>
     <div class="stats">
       <div class="stat">
-        <div class="label">Localisation error</div>
+        <div class="label">loc error</div>
         <div class="val">0.061 m</div>
       </div>
       <div class="stat">
-        <div class="label">Peak attenuation</div>
+        <div class="label">peak</div>
         <div class="val">0.59</div>
       </div>
       <div class="stat">
-        <div class="label">Voxel size</div>
+        <div class="label">voxel</div>
         <div class="val">0.2 m</div>
       </div>
       <div class="stat">
-        <div class="label">Noise budget</div>
-        <div class="val">≤ 1.5 dB σ</div>
+        <div class="label">noise budget</div>
+        <div class="val">≤1.5 dB σ</div>
       </div>
     </div>
 
     <footer>
-      source: <a href="https://github.com/potionxyz/rti-simulator">github.com/potionxyz/rti-simulator</a>
-      · built by <a href="https://0xnath-live.vercel.app">nathan</a>
-      · use mouse to orbit · scroll to zoom · see <code>docs/</code> for the full writeup
+      drag to rotate &middot; scroll to zoom<br>
+      source: <a href="https://github.com/potionxyz/rti-simulator">github.com/potionxyz/rti-simulator</a><br>
+      built by <a href="https://0xnath-live.vercel.app">nathan</a>
     </footer>
   </div>
 </body>

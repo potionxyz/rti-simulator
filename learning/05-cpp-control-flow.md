@@ -134,10 +134,12 @@ this is the "textbook" pseudoinverse. it's the theoretically optimal estimate if
 
 ```cpp
 Eigen::VectorXd Reconstructor::tikhonov(const Eigen::VectorXd& y, double lambda) {
-    int N = grid_.get_total();
-    Eigen::MatrixXd A = WtW_ + lambda * Eigen::MatrixXd::Identity(N, N);
-    Eigen::VectorXd b = Wt_ * y;
-    return A.llt().solve(b);
+    Eigen::VectorXd Wt_y = Wt_ * y;
+    int n = forward_.num_voxels();
+    Eigen::MatrixXd regularised = WtW_ + lambda * Eigen::MatrixXd::Identity(n, n);
+    Eigen::LDLT<Eigen::MatrixXd> solver(regularised);
+    Eigen::VectorXd x = solver.solve(Wt_y);
+    return clamp_non_negative(x);
 }
 ```
 
@@ -145,18 +147,25 @@ the actual workhorse. same equation as module 04:
 
 $$\hat{\mathbf{x}} = (\mathbf{W}^T\mathbf{W} + \lambda\mathbf{I})^{-1}\mathbf{W}^T\mathbf{y}$$
 
-critically, i do **not** call `.inverse()` on the matrix. i use `A.llt().solve(b)`, which asks Eigen to perform a Cholesky decomposition ($\mathbf{A} = \mathbf{L}\mathbf{L}^T$ where $\mathbf{L}$ is lower-triangular) and then solve the two triangular systems $\mathbf{L}\mathbf{z} = \mathbf{b}$ and $\mathbf{L}^T\mathbf{x} = \mathbf{z}$ by direct substitution.
+critically, i do **not** call `.inverse()` on the matrix. i use `LDLT` — the robust Cholesky variant which factorises $\mathbf{A} = \mathbf{L}\mathbf{D}\mathbf{L}^T$ (where $\mathbf{L}$ is unit lower-triangular and $\mathbf{D}$ is diagonal) and then solves by direct substitution.
 
-why Cholesky instead of a general inverse? two reasons:
+why LDLT specifically? there are two related decompositions:
 
-1. **speed.** for an $N \times N$ symmetric positive-definite matrix, Cholesky is about twice as fast as LU decomposition and roughly three times faster than forming `A.inverse()` explicitly. and $\mathbf{W}^T\mathbf{W} + \lambda\mathbf{I}$ is always symmetric positive-definite (for $\lambda > 0$), so we are allowed to use it.
+- **LLT (plain Cholesky)** — $\mathbf{A} = \mathbf{L}\mathbf{L}^T$. slightly faster, but strictly requires the matrix to be positive-*definite* (every eigenvalue $> 0$). if even one eigenvalue is effectively zero, LLT fails.
+- **LDLT (robust Cholesky)** — $\mathbf{A} = \mathbf{L}\mathbf{D}\mathbf{L}^T$. handles positive-*semi-definite* matrices, including rank-deficient cases. the extra diagonal $\mathbf{D}$ absorbs zero eigenvalues without breaking the decomposition.
+
+$\mathbf{W}^T\mathbf{W}$ is rank-deficient when the system is underdetermined (which it always is for us — 28 measurements, 1,000 unknowns). adding $\lambda\mathbf{I}$ mathematically makes it positive-definite, but if $\lambda$ is tiny or you're exploring edge cases with $\lambda = 0$, LLT can still numerically fail. LDLT handles all of that gracefully. this is exactly why Eigen's `ldlt()` is the textbook choice for regularised least squares.
+
+why *any* Cholesky instead of a general inverse? two reasons:
+
+1. **speed.** for an $N \times N$ symmetric positive-semi-definite matrix, Cholesky-family decomposition is about twice as fast as LU decomposition and roughly three times faster than forming `A.inverse()` explicitly.
 2. **stability.** forming an explicit inverse and then multiplying it against $\mathbf{b}$ introduces extra floating-point rounding. Cholesky substitution does the same maths with fewer intermediate values, so the answer is numerically cleaner.
 
 ### why not ConjugateGradient?
 
 module 04 references `Eigen::ConjugateGradient`. it's the textbook answer for large sparse systems because it iteratively solves $\mathbf{A}\mathbf{x} = \mathbf{b}$ without ever forming $\mathbf{A}^{-1}$, and each iteration is just a sparse matrix-vector multiply. it scales brilliantly to millions of voxels.
 
-but at 1000 voxels, the overhead of CG's iteration loop actually makes it slower than a direct Cholesky on dense Eigen. i'd switch to CG the moment i moved to a $30^3$ or larger grid. for now, dense Cholesky is the right call.
+but at 1,000 voxels, the overhead of CG's iteration loop actually makes it slower than a direct LDLT on dense Eigen. i'd switch to CG the moment i moved to a $30^3 = 27{,}000$ or larger grid, because dense LDLT scales as $O(N^3)$ — at 27,000 voxels the solve would take minutes and eat gigabytes of RAM. for the current 1,000-voxel deployment, dense LDLT is the right call.
 
 ---
 
@@ -173,8 +182,8 @@ the three Eigen types you care about in this project:
 the three Eigen operations that matter most:
 
 - **`.transpose()`** — returns a transposed view without copying data (it's a lazy expression).
-- **`.llt()`** — Cholesky decomposition for symmetric positive-definite matrices.
-- **`.ldlt()`** — robust Cholesky (LDL^T) that works even when the matrix is only positive semi-definite. i'd use this if $\lambda = 0$.
+- **`.ldlt()`** — robust Cholesky (LDL^T) decomposition that works even when the matrix is only positive semi-definite. this is what the tikhonov solver actually uses.
+- **`.llt()`** — plain Cholesky. slightly faster than LDLT but requires strict positive-definiteness. acceptable alternative when $\lambda$ is safely large.
 
 ---
 

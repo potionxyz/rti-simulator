@@ -12,13 +12,7 @@
     font-size: 12px; z-index: 10; line-height: 1.6;
   }
   #info h1 { font-size: 14px; color: #eee; margin-bottom: 5px; }
-  .label {
-    position: absolute; bottom: 20px; color: #666;
-    font-size: 13px; z-index: 10; text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  #label-left { left: 25%; transform: translateX(-50%); }
-  #label-right { right: 25%; transform: translateX(50%); }
+  /* 3D labels rendered via sprites - no CSS labels needed */
 </style>
 </head>
 <body>
@@ -26,8 +20,7 @@
   <h1>RTI 3D Reconstruction - Ground Truth vs Reconstruction</h1>
   drag to rotate, scroll to zoom
 </div>
-<div class="label" id="label-left">ground truth</div>
-<div class="label" id="label-right">reconstruction</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -679,6 +672,45 @@ const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true,
   const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(3.00,2.00,2.00),new THREE.Vector3(5.00,2.00,2.00)]);
   scene.add(new THREE.Line(g,linkMat));
 }
+
+// --- floating 3D labels stuck to each model ---
+function makeLabelSprite(text) {
+  const canvas = document.createElement('canvas');
+  const size = 512;
+  canvas.width = size;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = 'bold 56px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  const metrics = ctx.measureText(text);
+  const pad = 24;
+  const boxW = metrics.width + pad * 2;
+  const boxH = 88;
+  ctx.fillRect((canvas.width - boxW) / 2, (canvas.height - boxH) / 2, boxW, boxH);
+  ctx.strokeStyle = 'rgba(180,180,180,0.5)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect((canvas.width - boxW) / 2, (canvas.height - boxH) / 2, boxW, boxH);
+  ctx.fillStyle = '#eaeaea';
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(1.6, 0.4, 1);
+  sprite.renderOrder = 999;
+  return sprite;
+}
+
+const truthLabel = makeLabelSprite('GROUND TRUTH');
+truthLabel.position.set(1, 2.55, 1);
+scene.add(truthLabel);
+
+const reconLabel = makeLabelSprite('RECONSTRUCTION');
+reconLabel.position.set(4, 2.55, 1);
+scene.add(reconLabel);
 
 function animate() {
   requestAnimationFrame(animate);

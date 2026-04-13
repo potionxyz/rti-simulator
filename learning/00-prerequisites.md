@@ -11,7 +11,7 @@ the forward model (signal $\Delta y$) is basically a massive dot product between
 ## 2. matrix multiplication dimensions
 if matrix $\mathbf{A}$ is an $m \times p$ matrix, and matrix $\mathbf{B}$ is a $p \times n$ matrix, you can multiply them to get an $m \times n$ matrix $\mathbf{C}$.
 **why you need this:**
-the core equation is $\mathbf{Wx} = \mathbf{y}$. $\mathbf{W}$ is a $28 \times 27000$ matrix. $\mathbf{x}$ is a $27000 \times 1$ column vector. multiplying them results in a $28 \times 1$ column vector ($\mathbf{y}$). understanding dimension compatibility is how you catch segfaults in c++.
+the core equation is $\mathbf{Wx} = \mathbf{y}$. at full theoretical scale (3m room, 10cm voxels), $\mathbf{W}$ is $28 \times 27000$. at the scale the committed simulator actually runs (2m room, 20cm voxels), $\mathbf{W}$ is $28 \times 1000$. $\mathbf{x}$ is the corresponding $N \times 1$ column vector. multiplying them results in a $28 \times 1$ column vector ($\mathbf{y}$). understanding dimension compatibility is how you catch segfaults in c++.
 
 ## 3. the l2-norm (euclidean length)
 the $L_2$-norm of a vector $\mathbf{v}$ with elements $v_1, v_2, \dots, v_n$ is its physical length:

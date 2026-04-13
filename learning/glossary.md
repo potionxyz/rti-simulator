@@ -63,7 +63,8 @@ when you come back to this project in six months (or in an interview, under pres
 | Ridge Regression | the statistics name for Tikhonov regularisation. same equation. |
 | LASSO | regression with L1 penalty. promotes sparse solutions. not used here because L1 is not differentiable at zero. |
 | Conjugate Gradient | iterative solver for $\mathbf{A}\mathbf{x} = \mathbf{b}$. scales to millions of voxels. overkill for our 1000-voxel problem. |
-| Cholesky Decomposition | factorise $\mathbf{A} = \mathbf{L}\mathbf{L}^T$. the fastest way to solve symmetric positive-definite systems. what we actually use. |
+| Cholesky Decomposition | factorise $\mathbf{A} = \mathbf{L}\mathbf{L}^T$. the fastest way to solve symmetric positive-definite systems. |
+| LDLT (robust Cholesky) | factorise $\mathbf{A} = \mathbf{L}\mathbf{D}\mathbf{L}^T$. variant of Cholesky that handles positive semi-definite (rank-deficient) matrices. this is what `Reconstructor::tikhonov()` actually calls via `Eigen::LDLT`. |
 
 ---
 
@@ -74,7 +75,7 @@ when you come back to this project in six months (or in an interview, under pres
 | Siddon's Algorithm | finds the exact sequence of voxels a line crosses and the chord length inside each one, using parametric line equations. $O(N_x + N_y + N_z)$. | building the rows of $\mathbf{W}$ in `ForwardModel` |
 | Ray Marching | steps along a line in fixed increments (e.g. 1mm) to find intersections. $O(d / \Delta t)$. | not used — too slow |
 | Back-Projection | computes $\hat{\mathbf{x}} = \mathbf{W}^T\mathbf{y}$. the quick-and-dirty reconstruction. | `Reconstructor::back_projection()` |
-| Tikhonov Solve | computes $\hat{\mathbf{x}} = (\mathbf{W}^T\mathbf{W} + \lambda\mathbf{I})^{-1}\mathbf{W}^T\mathbf{y}$ via Cholesky. | `Reconstructor::tikhonov()` |
+| Tikhonov Solve | computes $\hat{\mathbf{x}} = (\mathbf{W}^T\mathbf{W} + \lambda\mathbf{I})^{-1}\mathbf{W}^T\mathbf{y}$ via LDLT (robust Cholesky). | `Reconstructor::tikhonov()` |
 | Centre-of-Mass | averages the 3D coordinates of all voxels above a threshold, weighted by their values. gives a single $(x,y,z)$ localisation. | `Reconstructor::evaluate_auto_threshold()` |
 | Auto-Threshold | computes a threshold as a fraction (default 30%) of the peak reconstructed attenuation. | evaluation pipeline |
 

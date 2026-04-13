@@ -2,7 +2,7 @@
 
 we left off with $M$ linear equations (measurements, $\mathbf{y}$) and $N$ unknowns (voxels, $\mathbf{x}$). our system is modeled as $\mathbf{y} = \mathbf{Wx}$.
 
-because $M \ll N$ (e.g., 28 measurements vs. 27,000 voxels), $\mathbf{W}$ is a rectangular matrix, not a square matrix. an inverse matrix $\mathbf{W}^{-1}$ simply does not exist. and even if it did, real-world data contains noise.
+because $M \ll N$ (28 measurements vs. 27,000 voxels at the theoretical scale, or 28 vs. 1,000 at the committed scale), $\mathbf{W}$ is a rectangular matrix, not a square matrix. an inverse matrix $\mathbf{W}^{-1}$ simply does not exist. and even if it did, real-world data contains noise.
 
 if we try to solve for $\mathbf{y_{noisy}} = \mathbf{Wx}$, any exact mathematical solution will amplify that noise to infinity, resulting in an output image that looks like TV static instead of a human. this is known mathematically as an **ill-posed inverse problem**.
 
@@ -31,7 +31,7 @@ $$ \mathbf{x} = (\mathbf{W}^T \mathbf{W})^{-1} \mathbf{W}^T \mathbf{y} $$
 
 this formula is mathematically sound, but in Volumetric Radio Tomographic Imaging, it physically fails.
 
-the matrix $(\mathbf{W}^T \mathbf{W})$ is massive ($27000 \times 27000$). because the problem is severely underdetermined (we lack measurements for thousands of voxels), many rows in this matrix are near zero or linearly dependent.
+the matrix $(\mathbf{W}^T \mathbf{W})$ is $N \times N$ — that's $27{,}000 \times 27{,}000$ at the theoretical scale, or $1{,}000 \times 1{,}000$ at the committed scale. at either size, because the problem is severely underdetermined (we lack measurements for most voxels), many rows in this matrix are near zero or linearly dependent.
 
 in linear algebra, a matrix like this has a very high **condition number**. it is near-singular. when the computer attempts to calculate the inverse $(\mathbf{W}^T \mathbf{W})^{-1}$, the tiny noise fluctuations in $\mathbf{y}$ are multiplied by astronomically large values.
 
@@ -73,28 +73,32 @@ by boosting the diagonal, the matrix is no longer singular. its condition number
 
 ## the c++ implementation
 
-using the `Eigen` library in C++, this terrifying mathematical equation translates into highly readable code:
+using the `Eigen` library in C++, this terrifying mathematical equation translates into highly readable code. at the committed scale (1,000 voxels, dense matrices), the solver in `src/reconstructor.cpp` uses direct LDLT decomposition:
 
 ```cpp
-// from test_scene.cpp / Reconstructor
-Eigen::SparseMatrix<float> Wt = W.transpose();
-Eigen::SparseMatrix<float> WtW = Wt * W;
+// from src/reconstructor.cpp (lightly paraphrased)
+Eigen::VectorXd Wt_y = Wt_ * y;
 
-// construct the identity matrix penalty term
-Eigen::SparseMatrix<float> I(N, N);
-I.setIdentity();
+// build the regularised matrix: W^T W + lambda * I
+int n = forward_.num_voxels();
+Eigen::MatrixXd regularised = WtW_ + lambda * Eigen::MatrixXd::Identity(n, n);
 
-// WtW + lambda*I
-Eigen::SparseMatrix<float> A = WtW + lambda * I;
-
-// Wt * y
-Eigen::VectorXf b = Wt * y;
-
-// Using Eigen's sparse iterative solver (Conjugate Gradient)
-// solving Ax = b for x
-Eigen::ConjugateGradient<Eigen::SparseMatrix<float>> solver;
-solver.compute(A);
-Eigen::VectorXf x = solver.solve(b);
+// solve using robust Cholesky (LDLT):
+// LDLT factorises A = L D L^T and handles positive semi-definite systems,
+// which matters here because W^T W is rank-deficient before regularisation.
+Eigen::LDLT<Eigen::MatrixXd> solver(regularised);
+Eigen::VectorXd x = solver.solve(Wt_y);
 ```
 
-this is the core engine of the entire simulation. the ESP32s feed in $\mathbf{y}$, the physics engine builds $\mathbf{W}$, and the Eigen solver crunches the Tikhonov equation to output a 3D image of the human ($\mathbf{x}$).
+at the full theoretical scale (27,000 voxels, sparse matrices), dense LDLT becomes impractical — an $N \times N$ dense factorisation is $O(N^3)$ time and $O(N^2)$ RAM. the equivalent sparse version would use `Eigen::ConjugateGradient` iteratively:
+
+```cpp
+// hypothetical scaled-up version (not currently in the repo)
+Eigen::SparseMatrix<double> A = WtW_sparse + lambda * I_sparse;
+Eigen::VectorXd b = Wt_sparse * y;
+Eigen::ConjugateGradient<Eigen::SparseMatrix<double>> cg;
+cg.compute(A);
+Eigen::VectorXd x = cg.solve(b);
+```
+
+see `docs/05-evaluation.md` for the resolution-vs-solver trade-off. either way, this is the core engine of the entire simulation: the ESP32s feed in $\mathbf{y}$, the physics engine builds $\mathbf{W}$, and the Eigen solver crunches the Tikhonov equation to output a 3D image of the human ($\mathbf{x}$).

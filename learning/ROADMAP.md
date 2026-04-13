@@ -50,7 +50,7 @@ work through these modules in order.
 
 *   **topics covered:**
     *   constructing the weight matrix $\mathbf{W}$ (rows = links, columns = voxels).
-    *   dimensionality traps: why an underdetermined system ($28 \times 27000$) has no exact inverse.
+    *   dimensionality traps: why an underdetermined system ($28 \times 27{,}000$ theoretical, $28 \times 1{,}000$ actual) has no exact inverse.
     *   sparse vs dense matrices: why storing $99.8\%$ zeros destroys ram.
     *   compressed sparse row (csr) format in the c++ `eigen` library.
 *   **reading:** `03-linear-algebra.md`

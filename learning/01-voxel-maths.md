@@ -4,6 +4,13 @@ so before we can simulate radio waves propagating through a room, we need to con
 
 instead, we discretise the room into a uniform grid of volumetric pixels, or "voxels". 
 
+> **note on scale throughout this module:**
+> i work through this whole chapter using a reference scenario of a **3m×3m×3m room at 10cm resolution (27,000 voxels)**. that's the physically realistic target for a production ESP32 deployment in a living room.
+>
+> the *committed simulator in this repo* actually runs at a smaller scale: **2m×2m×2m at 20cm (1,000 voxels)**. this is because at 27,000 voxels, the $\mathbf{W}^T\mathbf{W}$ matrix is $27{,}000 \times 27{,}000$ which is impractical for the direct Cholesky solver i use; you'd need iterative methods like Conjugate Gradient (see `docs/05-evaluation.md` for that trade-off). the maths is identical in both cases — only the matrix dimensions change.
+>
+> when you see "27,000" below, read it as the theoretical full-scale case. when you see "1,000", that's what actually runs when you type `./rti-simulator`.
+
 think of it like finite integration. if we have a room measuring 3m $\times$ 3m $\times$ 3m, and we want 10cm resolution, we partition the space into $0.1\text{m}^3$ volumes.
 
 * **x-axis (width):** $3.0\text{m} / 0.1\text{m} = 30$ voxels

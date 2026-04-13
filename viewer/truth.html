@@ -416,6 +416,26 @@ const linkMat = new THREE.LineBasicMaterial({color: 0x224466, transparent: true,
   scene.add(new THREE.Line(geo, linkMat));
 }
 
+// --- floating 3D label ---
+{
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.font = 'bold 56px monospace';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  const pad = 24, boxW = ctx.measureText('GROUND TRUTH').width + pad*2, boxH = 88;
+  ctx.fillRect((512-boxW)/2,(128-boxH)/2,boxW,boxH);
+  ctx.strokeStyle = 'rgba(180,180,180,0.5)'; ctx.lineWidth = 2;
+  ctx.strokeRect((512-boxW)/2,(128-boxH)/2,boxW,boxH);
+  ctx.fillStyle = '#eaeaea';
+  ctx.fillText('GROUND TRUTH', 256, 66);
+  const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const s = new THREE.Sprite(mat); s.scale.set(1.6,0.4,1); s.renderOrder = 999;
+  s.position.set(1, 2.55, 1); scene.add(s);
+}
+
 // animation loop
 function animate() {
   requestAnimationFrame(animate);

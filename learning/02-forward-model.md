@@ -26,7 +26,7 @@ $$ y_i = \sum_{j=1}^{J} W_{ij} x_j + n_i $$
 * $x_j$ is the constant attenuation inside voxel $j$.
 * $W_{ij}$ is the exact physical distance (the chord length) that the signal travels *inside* voxel $j$ on its path to the receiver.
 
-if the signal ray completely misses voxel $j$, then the distance $W_{ij}$ is simply 0. for a room with 27,000 voxels, a single line-of-sight ray only passes through maybe 50 of them. the remaining 26,950 have a weight of 0.
+if the signal ray completely misses voxel $j$, then the distance $W_{ij}$ is simply 0. for a room with 27,000 voxels (the theoretical full-scale case), a single line-of-sight ray only passes through maybe 50 of them. the remaining 26,950 have a weight of 0. the committed simulator runs at 1,000 voxels and a ray passes through roughly 15-20, so the sparsity argument holds at every scale — most of $\mathbf{W}$ is always zero.
 
 ## siddon's algorithm: solving the intersection
 

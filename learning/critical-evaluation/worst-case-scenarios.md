@@ -42,10 +42,10 @@ If diffraction introduces a non-linear path, the linear matrix $\mathbf{W}$ fail
 
 ## Scenario 3: Execution Time (Embedded hardware)
 
-> **Q:** "You wrote this in C++ with Eigen to run on ESP32s on the edge. But generating a $27,000 \times 27,000$ Tikhonov matrix and running a Conjugate Gradient iterative solver takes megabytes of RAM and heavy floating-point operations. The ESP32 only has 520KB of SRAM. How does the simulator actually port to your hardware target?"
+> **Q:** "You wrote this in C++ with Eigen to eventually run on ESP32s at the edge. The committed simulator uses a 1,000-voxel grid that solves instantly on a laptop, but a production deployment needs 27,000 voxels for useful spatial resolution. That's a $27{,}000 \times 27{,}000$ Tikhonov matrix — megabytes of RAM even sparse, heavy floating-point operations, and the ESP32 only has 520KB of SRAM. How does the simulator actually port to your hardware target?"
 
 **The Problem:**
-The mathematics run beautifully on an x86 laptop with 16GB of RAM. The embedded constraint changes everything. The ESP32 cannot hold the matrix $\mathbf{W}$ in its SRAM. Even if we use the external PSRAM (8MB), calculating the matrix inverse ($\mathbf{W}^T\mathbf{W} + \lambda \mathbf{I}$) will take several seconds per frame, rendering "real-time" localisation impossible.
+The mathematics run beautifully on an x86 laptop with 16GB of RAM. The embedded constraint changes everything. The ESP32 cannot hold the full-scale $\mathbf{W}$ in its SRAM. Even if we use the external PSRAM (8MB), running a Conjugate Gradient iterative solver over $\mathbf{W}^T\mathbf{W} + \lambda \mathbf{I}$ would take several seconds per frame, rendering "real-time" localisation impossible.
 
 **The Catastrophe:**
 Out Of Memory (OOM) fatal exception on the microcontroller before the first frame of $\mathbf{x}$ is computed.
@@ -55,4 +55,4 @@ Out Of Memory (OOM) fatal exception on the microcontroller before the first fram
 
 I would run the heavy Siddon's algorithm and matrix inversion purely on a host machine (my laptop) during a one-time calibration phase. I would export the final solved matrix $\mathbf{\Pi}$ as a binary flash file to the ESP32 array.
 
-During runtime on the embedded hardware, the entire $27,000$-voxel reconstruction collapses from a multi-stage Conjugate Gradient iterative solver into a single, highly efficient matrix-vector multiplication step: $\mathbf{x} = \mathbf{\Pi} \mathbf{y}$. By pre-computing the inverse, the ESP32 only has to perform basic $O(N)$ multiplication instantly, bypassing the memory and timing limits."
+During runtime on the embedded hardware, the entire 27,000-voxel reconstruction collapses from a multi-stage Conjugate Gradient iterative solver into a single, highly efficient matrix-vector multiplication step: $\mathbf{x} = \mathbf{\Pi} \mathbf{y}$. By pre-computing the inverse, the ESP32 only has to perform $O(M \times N)$ multiplication, bypassing the memory and timing limits."

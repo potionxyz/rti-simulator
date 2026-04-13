@@ -2,7 +2,7 @@
 
 if you have just started sixth form, your mathematical toolkit consists of basic calculus ($\frac{dy}{dx}$), simultaneous equations, and 2d graphs ($y = mx + c$).
 
-this project operates in 3d vector space with 27,000 variables. this document is a "cheat sheet" to bridge your standard AS-Level textbook into the linear algebra required for the simulator. you don't need a university degree, you just need the translation key.
+this project operates in 3d vector space with up to 27,000 variables (at the full 3m-room theoretical scale — the committed simulator uses a smaller 1,000-voxel grid for fast iteration, but the maths scales identically). this document is a "cheat sheet" to bridge your standard AS-Level textbook into the linear algebra required for the simulator. you don't need a university degree, you just need the translation key.
 
 ---
 

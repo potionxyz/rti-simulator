@@ -21,7 +21,7 @@ i broke the system down into five main classes to isolate responsibilities and k
 this is the lowest-level data structure. computing continuous 3D space is basically impossible in real-time, so the room is discretised into 3D cubes called voxels.
 
 *   **role:** store the physical attenuation values of the space.
-*   **key decision:** what's the best way to store a 3D grid? the obvious answer is a 3D array: `std::vector<std::vector<std::vector<float>>>`. i explicitly didn't do this. nested vectors scatter memory dynamically across the heap. when you need to iterate over 27,000 voxels to build a weight matrix, those cache misses will absolutely tank performance.
+*   **key decision:** what's the best way to store a 3D grid? the obvious answer is a 3D array: `std::vector<std::vector<std::vector<float>>>`. i explicitly didn't do this. nested vectors scatter memory dynamically across the heap. when you need to iterate over up to 27,000 voxels to build a weight matrix (or 1,000 at the actual scale i ended up running), those cache misses will absolutely tank performance.
 *   **the fix:** i used a single, flat 1D `std::vector<float>`, allocating all memory contiguously upfront. i then mapped 3D coordinates $(x,y,z)$ to a 1D index using $i = x + (y \times N_x) + (z \times N_x \times N_y)$. it’s a standard graphics programming trick, but it makes the memory footprint incredibly tight and fast.
 
 ### 2. `Node` & `Scene` (the environment)

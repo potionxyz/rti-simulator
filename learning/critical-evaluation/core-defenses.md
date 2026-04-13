@@ -8,10 +8,10 @@ this document is your defensive roadmap. it contains the most likely questions a
 
 ## 1. The Physics & Sparsity
 
-**Q: "You discretised the room into 27,000 voxels but only have 28 measurements. How is this matrix structurally different from a typical image processing matrix, and how did you handle that in memory?"**
+**Q: "You have a 1,000-voxel grid with only 28 measurements. How is this matrix structurally different from a typical image processing matrix, and how did you handle that in memory?"**
 
 *   **Why they ask:** they want to see if you understand the concept of a "sparse matrix" and its memory implications.
-*   **Your Answer:** "The weight matrix $W$ maps every link to every voxel. Since radio waves travel in narrow lines of sight, a single link only intersects roughly 50 out of 27,000 voxels. That means the matrix is over 99.8% empty. If I stored that as a standard dense 2D float array in C++, I'd be wasting megabytes of RAM on zeros and completely destroying my CPU cache locality. I used the Eigen library to store $W$ in Compressed Sparse Row (CSR) format, so the matrix multiplication only computes non-zero values."
+*   **Your Answer:** "The weight matrix $W$ maps every link to every voxel. Since radio waves travel in narrow lines of sight, a single link only intersects roughly 15-20 out of 1,000 voxels in my current grid — about 98% of the matrix is zero. At full-scale deployment (3m room, 10cm voxels → 27,000 voxels) that sparsity climbs to over 99.8%. For the committed simulator, 1,000 voxels is small enough that I store $W$ as a dense `Eigen::MatrixXd` and rely on contiguous memory layout for L1/L2 cache locality during the matrix-vector products. When I scale to 27,000+ voxels for a real deployment, I'll switch to `Eigen::SparseMatrix` in Compressed Sparse Row (CSR) format, which stores only the non-zero values and skips the zero multiplications entirely."
 
 **Q: "What happens if a radio wave perfectly grazes the boundary between two voxels in your forward model?"**
 
@@ -25,7 +25,7 @@ this document is your defensive roadmap. it contains the most likely questions a
 **Q: "Why can't you just use standard Linear Least Squares to solve for the voxel attenuation?"**
 
 *   **Why they ask:** this is the core mathematics question. they want you to explain ill-posed inverse problems.
-*   **Your Answer:** "Because the system is severely underdetermined. I have $M=28$ equations and $N=27,000$ unknowns. The least squares matrix $(\mathbf{W}^T\mathbf{W})$ is $27,000 \times 27,000$, but it is rank-deficient and near-singular. Its condition number is astronomically high. If I inverted it, any tiny amount of noise in the $\mathbf{y}$ vector would be amplified to infinity, resulting in an image with massive oscillating positive and negative attenuation values. The math just panics."
+*   **Your Answer:** "Because the system is severely underdetermined. I have $M=28$ equations and $N=1{,}000$ unknowns at the current scale (27,000 at full theoretical deployment). Either way $M \ll N$, so the least squares matrix $(\mathbf{W}^T\mathbf{W})$ is rank-deficient and near-singular — its condition number is astronomically high. If I inverted it, any tiny amount of noise in the $\mathbf{y}$ vector would be amplified enormously, resulting in an image with massive oscillating positive and negative attenuation values. The math just panics."
 
 **Q: "Explain how Tikhonov Regularisation fixes that mathematical panic."**
 
@@ -44,7 +44,7 @@ this document is your defensive roadmap. it contains the most likely questions a
 **Q: "Why did you build this in C++ instead of Python/NumPy?"**
 
 *   **Why they ask:** python is standard for this. C++ is a deliberate engineering choice.
-*   **Your Answer:** "Three reasons. First, memory contiguity. Inverting large sparse matrices causes RAM spikes. C++ allowed me to strictly manage heap allocations and ensure my voxel grid was a single flat 1D vector mapped linearly to $i = x+yN_x+zN_xN_y$ to guarantee L1/L2 cache locality. Second, performance. Ray-tracing 28 links through 27,000 voxels happens orders of magnitude faster in compiled C++ using Siddon's method. Third, the eventual goal is hardware scale on physical ESP32 microcontrollers, which run C/C++. Building the maths engine in C++ now means it's portable later."
+*   **Your Answer:** "Three reasons. First, memory contiguity. Inverting large matrices causes RAM spikes. C++ allowed me to strictly manage heap allocations and ensure my voxel grid was a single flat 1D vector mapped linearly to $i = x+yN_x+zN_xN_y$ to guarantee L1/L2 cache locality. Second, performance. Ray-tracing 28 links through 1,000 voxels (or 27,000 at production scale) happens orders of magnitude faster in compiled C++ using Siddon's method than it would in interpreted Python. Third, the eventual goal is hardware scale on physical ESP32 microcontrollers, which run C/C++. Building the maths engine in C++ now means it's portable later."
 
 **Q: "What C++ standards or tools did you rely on?"**
 

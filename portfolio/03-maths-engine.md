@@ -12,7 +12,7 @@ in normal maths, you just find the inverse of $\mathbf{W}$ and multiply. $\mathb
 
 but in RTI, this is completely impossible.
 
-1.  **the matrix isn't square:** for an 8-node setup, i only have 28 unique cross-links (measurements). but my room is carved into 27,000 voxels (unknowns). $\mathbf{W}$ is a $28 \times 27000$ matrix. you mathematically cannot invert a rectangular matrix. it's an underdetermined system; there are infinitely many ways those 28 signals could have been blocked by 27,000 voxels.
+1.  **the matrix isn't square:** for an 8-node setup, i only have 28 unique cross-links (measurements). my committed simulator carves the room into 1,000 voxels at 0.2m resolution, so $\mathbf{W}$ is a $28 \times 1000$ matrix. at the theoretical full-scale deployment (3m room, 0.1m voxels) this would grow to $28 \times 27000$. either way, you mathematically cannot invert a rectangular matrix. it's an underdetermined system; there are infinitely many ways those 28 signals could have been blocked by thousands of unknown voxel values.
 2.  **hardware noise is fatal:** even if i used a pseudo-inverse, real-world data contains noise. the inverse of a severely ill-posed matrix acts like an amplifier. a 1 dBm noise fluctuation from the ESP32 will be multiplied by millions, resulting in a reconstructed image that is just violent mathematical static swinging between $+10,000$ and $-10,000$ attenuation.
 
 ## forcing a solution: least squares
@@ -30,7 +30,7 @@ i implemented this in C++ using the `Eigen` linear algebra library. i stored $\m
 
 but least squares failed immediately. 
 
-the new matrix $(\mathbf{W}^T \mathbf{W})$ is massive ($27000 \times 27000$). because the problem is so underdetermined, this new matrix is near-singular (its condition number is astronomically high). when Eigen tried to calculate the inverse, the solver either crashed or returned pure noise. 
+the new matrix $(\mathbf{W}^T \mathbf{W})$ is $N \times N$ — $1000 \times 1000$ at my committed scale, or $27000 \times 27000$ at the full theoretical deployment. because the problem is so underdetermined, this new matrix is near-singular (its condition number is astronomically high). when Eigen tried to calculate the inverse, the solver either crashed or returned pure noise. 
 
 ## the fix: tikhonov regularisation
 
@@ -52,25 +52,23 @@ that tiny $+ \lambda \mathbf{I}$ adds a constant value to the diagonal of the ma
 
 ### putting it into eigen
 
-translating this horrifying equation into C++ with Eigen was shockingly clean. running this on an underdetermined sparse matrix using a Conjugate Gradient solver is basically instant.
+translating this horrifying equation into C++ with Eigen was shockingly clean. at the committed 1,000-voxel scale, i use Eigen's dense LDLT (robust Cholesky) decomposition — it's basically instant.
 
 ```cpp
 // from src/reconstructor.cpp
-Eigen::SparseMatrix<float> W_transpose = W_.transpose();
-Eigen::SparseMatrix<float> WtW = W_transpose * W_;
+Eigen::VectorXd Wt_y = Wt_ * measurements;
 
-// the regularisation penalty (lambda * Identity Matrix)
-Eigen::SparseMatrix<float> I(nx_ * ny_ * nz_, nx_ * ny_ * nz_);
-I.setIdentity();
+// build the regularised matrix: W^T W + lambda * I
+int n = forward_.num_voxels();
+Eigen::MatrixXd regularised = WtW_ + lambda * Eigen::MatrixXd::Identity(n, n);
 
-// stabilise the matrix (WtW + lambda*I)
-Eigen::SparseMatrix<float> A = WtW + lambda * I;
-Eigen::VectorXf b = W_transpose * y;
-
-// solve Ax = b iteratively
-Eigen::ConjugateGradient<Eigen::SparseMatrix<float>> cg_solver;
-cg_solver.compute(A);
-VectorXf resolved_x = cg_solver.solve(b);
+// solve using LDLT decomposition
+// the regularisation guarantees this matrix is positive definite,
+// so the decomposition will always succeed
+Eigen::LDLT<Eigen::MatrixXd> solver(regularised);
+Eigen::VectorXd x = solver.solve(Wt_y);
 ```
 
-this is the core engine of the whole project. the mathematical capability to take 28 noisy cross-links from cheap ESP32 sensors, penalise the noise mathematically using Tikhonov, and spit out a stable 27,000-voxel 3D image of a human.
+LDLT specifically (rather than plain LLT) because $\mathbf{W}^T\mathbf{W}$ is rank-deficient before regularisation, and LDLT handles positive semi-definite matrices without crashing. at full scale with 27,000 voxels the dense solve becomes impractical ($O(N^3)$ time, gigabytes of RAM) — i'd swap to a sparse `Eigen::ConjugateGradient` iterative solver. that's the logical next step for a physical ESP32 deployment.
+
+this is the core engine of the whole project. the mathematical capability to take 28 noisy cross-links from cheap ESP32 sensors, penalise the noise mathematically using Tikhonov, and spit out a stable 3D image of a human — 1,000 voxels at the committed scale, scalable up to 27,000 with an iterative solver swap.

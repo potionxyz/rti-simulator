@@ -13,8 +13,10 @@ we can write this elegantly using matrix notation:
 $$ \mathbf{y} = \mathbf{Wx} $$
 
 *   $\mathbf{y}$ is a column vector of length $M$ (the 28 link measurements).
-*   $\mathbf{x}$ is a column vector of length $N$ (the 27,000 voxel unknown attenuations).
-*   $\mathbf{W}$ is an $M \times N$ matrix (28 rows by 27,000 columns). this is our "weight matrix" or "system matrix".
+*   $\mathbf{x}$ is a column vector of length $N$ (the voxel unknown attenuations).
+*   $\mathbf{W}$ is an $M \times N$ matrix. this is our "weight matrix" or "system matrix".
+
+> **scaling note:** throughout this chapter i use $N = 27{,}000$ (a 3m room at 10cm resolution) as the *reference theoretical scale* because it's what a production deployment would target. the committed simulator in this repo runs at $N = 1{,}000$ (2m room, 20cm voxels) so the direct Cholesky solver stays tractable. the matrix structure, sparsity argument, and ill-posedness are identical at both scales — only the dimensions differ.
 
 every row in $\mathbf{W}$ represents a single physical radio link. every column represents a single physical voxel in the room. the value at $W_{i,j}$ is the distance link $i$ travels through voxel $j$.
 
@@ -55,8 +57,8 @@ $$ \mathbf{W}^{-1}\mathbf{Wx} = \mathbf{W}^{-1}\mathbf{y} \implies \mathbf{x} = 
 
 there is a fatal flaw in this approach. **a matrix must be square ($N \times N$) to have an inverse.** 
 
-our $\mathbf{W}$ matrix is $28 \times 27000$. it is severely rectangular. 
-in mathematical terms, the problem is **underdetermined**. we have 27,000 unknowns (voxels), but only 28 equations (measurements). 
+our $\mathbf{W}$ matrix is $28 \times 27000$ (or $28 \times 1000$ at the committed scale). either way it is severely rectangular. 
+in mathematical terms, the problem is **underdetermined**. we have 27,000 unknowns (or 1,000 at the committed scale), but only 28 equations (measurements). 
 
 imagine i give you the equation $a + b = 10$, and ask you to solve for $a$ and $b$. you can't. it could be 5 and 5, or 9 and 1. there are infinite valid solutions. 
 

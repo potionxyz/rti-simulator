@@ -17,7 +17,7 @@ you built a massively mathematical machine learning/inverse problem simulator in
 *   C++ required manual `CMakeLists.txt` build configuration, manual memory management (`new`, `delete`, or `std::vector`), and building an entire separate node/vercel stack just to see the 3d output images.
 
 **The Defense (Why C++ was correct):**
-1.  **Cache Locality:** python abstracts memory placement. in a $27000 \times 27000$ inverse solver, python's garbage collection and object overhead cause massive ram spikes. C++ allowed you to construct a `std::vector<float>` and guarantee contiguous L1/L2 cache hits during Siddon's algorithm.
+1.  **Cache Locality:** python abstracts memory placement. in a large inverse solver — $1000 \times 1000$ at current scale, scaling up to $27000 \times 27000$ for a production deployment — python's garbage collection and object overhead cause unpredictable ram spikes. C++ allowed you to construct a `std::vector<double>` and guarantee contiguous L1/L2 cache hits during Siddon's algorithm.
 2.  **Embedded Target:** the final stage of RTI is physical deployment on low-power ESP32 microcontrollers. python cannot run performantly on edge devices. Writing the core solver in C++ now means the backend is inherently portable to edge-computing scenarios later.
 
 ---
@@ -25,14 +25,16 @@ you built a massively mathematical machine learning/inverse problem simulator in
 ## 2. Voxel Size: 10cm vs. 5cm vs. 20cm
 
 **The Choice:**
-you discretised the physical $3m^3$ room into $0.1m$ (10cm) voxels, resulting in $30 \times 30 \times 30 = 27,000$ voxels.
+the committed simulator runs on a $2m^3$ room with $0.2m$ voxels, giving $10 \times 10 \times 10 = 1{,}000$ voxels — small enough for direct LDLT solving. the full-scale deployment target is a $3m^3$ room at $0.1m$ resolution, giving $30 \times 30 \times 30 = 27{,}000$ voxels, which would require swapping to an iterative Conjugate Gradient solver.
 
-**The Trade-Off (Why 10cm):**
-*   if you use **5cm voxels ($216,000$ voxels)**: the physical resolution is incredible, but the math explodes. your matrix $\mathbf{W}$ becomes $28 \times 216000$. the least squares term $(\mathbf{W}^T\mathbf{W})$ tries to allocate a matrix with $46$ billion floats ($186$ GB of RAM). your computer crashes before the solver even starts calculating.
-*   if you use **20cm voxels ($4,000$ voxels)**: the math runs instantly, but the physics breaks down. a human torso is roughly 40cm wide. in a 20cm grid, the entire human body is represented by just 4 voxels. the spatial resolution is so poor the localisation error metric becomes completely meaningless.
+**The Trade-Off (resolution vs tractability):**
+*   **5cm voxels ($216{,}000$ in a 3m room):** the physical resolution is incredible, but the math explodes. the matrix $\mathbf{W}^T\mathbf{W}$ holds $46{,}000{,}000{,}000$ floats ($\approx$ 370 GB of RAM if stored dense, still many GB sparse). your machine crashes before the solver even starts. the only path forward is a sparse iterative solver plus preconditioning, and probably out-of-core memory.
+*   **10cm voxels ($27{,}000$ in a 3m room):** the physical sweet spot for a real deployment. a human torso spans 20-30 voxels, giving good localisation fidelity. the dense solver is impractical but a sparse `ConjugateGradient` runs in seconds.
+*   **20cm voxels ($1{,}000$ in a 2m room, what i actually built):** math runs in milliseconds with dense LDLT, but each human body is only about 4 voxels across. localisation accuracy is limited by the voxel edge itself.
+*   **40cm voxels:** too coarse — a human could fit inside a single voxel and lose all shape information.
 
 **The Defense:**
-"10cm is the sweet spot. it provides enough physical fidelity to capture a human's 3D profile across 20-30 voxels, while keeping the inverse problem small enough ($27,000$ unknowns) that the Eigen sparse matrix solver can run Conjugate Gradients in real-time without blowing out system RAM."
+"I picked 20cm for the committed version because it keeps the inverse problem fully tractable with a direct Cholesky solver and lets me iterate on algorithms quickly. For a production ESP32 deployment, 10cm resolution is the real target because it captures enough of the human torso to actually be useful for localisation, but that requires moving to an iterative sparse solver (Conjugate Gradient or LSQR) and pre-computing the Tikhonov pseudo-inverse on a host machine rather than on the microcontroller. The maths and architecture don't change — only the solver primitive does."
 
 ---
 
@@ -61,4 +63,4 @@ you stabilised the Least Squares inverse problem using Tikhonov Regularisation (
 
 **The Defense (Why you didn't use L1):**
 "L1 regularisation (Compressive Sensing) is physically sound because the true attenuation field is highly sparse—most of the room is air. However, the $L_1$ norm uses an absolute value ($|x|$). It is not mathematically differentiable at $x=0$.
-Because of this, I could not use the simple, incredibly fast Normal Equations to find the gradient minimum. $L_1$ requires complex, computationally expensive iterative solvers like ADMM (Alternating Direction Method of Multipliers) or Interior Point Methods. For a real-time simulator aiming for embedded ESP32 hardware, the computational cost of solving an $L_1$ problem on $27,000$ voxels was too high. The Tikhonov $L_2$ norm keeps the matrix equation differentiable and invertible instantly with `Eigen`."
+Because of this, I could not use the simple, incredibly fast Normal Equations to find the gradient minimum. $L_1$ requires complex, computationally expensive iterative solvers like ADMM (Alternating Direction Method of Multipliers) or Interior Point Methods. For a real-time simulator aiming for embedded ESP32 hardware, the computational cost of solving an $L_1$ problem on even 1,000 voxels (let alone 27,000 at full deployment) was too high. The Tikhonov $L_2$ norm keeps the matrix equation differentiable and solvable instantly with Eigen's `LDLT`."
